@@ -3,13 +3,20 @@ use chrono::{DateTime, Utc};
 fn main() {
     let mut db = inti_data_base();
     // SELECT * FROM Pokemon;
-    let table_id = db.tables.into_iter().filter(|table| table.table_name == "Pokemon")
-        .next().unwrap().table_id;
-    for row in &db.rows {
-        if row.table_id == table_id {
-            println!("{:?}", row.data)
-        }
+    let target_row1 = get_db_row(1, &db);
+    for row in target_row1 {
+        println!("{:?}", row.data)
     }
+    // SELECT * FROM Move;
+    let target_row2 = get_db_row(2, &db);
+    for row in target_row2 {
+        println!("{:?}", row.data)
+    }
+}
+
+/// テーブルIDを指定して、そのテーブルの全てのrowを取得する
+fn get_db_row(table_id: i32, db: &Database) -> Vec<&Row> {
+    db.rows.iter().filter(|row| row.table_id == table_id).collect()
 }
 
 fn inti_data_base() -> Database {
