@@ -3,19 +3,27 @@ use chrono::{DateTime, Utc};
 fn main() {
     let mut db = inti_data_base();
     // SELECT * FROM Pokemon;
-    let target_row1 = get_db_row(1, &db);
+    let target_row1 = get_db_row("Pokemon".to_string(), &db);
     for row in target_row1 {
         println!("{:?}", row.data)
     }
     // SELECT * FROM Move;
-    let target_row2 = get_db_row(2, &db);
+    let target_row2 = get_db_row("Move".to_string(), &db);
     for row in target_row2 {
+        println!("{:?}", row.data)
+    }
+    /// SELECT * FROM Pokemon WHERE Name = "ピカチュウ";
+    let column_position = db.tables.iter().find(|table| table.table_name == "Pokemon".to_string()).unwrap().columns.iter().position(|column| column == "Name").unwrap();
+    let binding1 = get_db_row("Pokemon".to_string(), &db);
+    let target_row3 = binding1.iter().filter(|row| row.data[column_position] == "ピカチュウ".to_string()).collect::<Vec<_>>();
+    for row in target_row3 {
         println!("{:?}", row.data)
     }
 }
 
 /// テーブルIDを指定して、そのテーブルの全てのrowを取得する
-fn get_db_row(table_id: i32, db: &Database) -> Vec<&Row> {
+fn get_db_row(table_name: String, db: &Database) -> Vec<&Row> {
+    let table_id = db.tables.iter().find(|table| table.table_name == table_name).unwrap().table_id;
     db.rows.iter().filter(|row| row.table_id == table_id).collect()
 }
 
@@ -70,6 +78,7 @@ fn inti_data_base() -> Database {
     }
 }
 
+// データベースの行を表す構造体
 struct Row {
     table_id: i32,
     row_id: i32,
@@ -77,12 +86,14 @@ struct Row {
     utc_time: DateTime<Utc>,
 }
 
+// データベースのテーブルを表す構造体
 struct Table {
     table_id: i32,
     table_name: String,
     columns: Vec<String>,
 }
 
+// データベース全体を表す構造体
 struct Database {
     tables: Vec<Table>,
     rows: Vec<Row>,
