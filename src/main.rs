@@ -2,23 +2,47 @@ use chrono::{DateTime, Utc};
 
 fn main() {
     let mut db = inti_data_base();
+    println!("-----");
     // SELECT * FROM Pokemon;
     let target_row1 = get_db_row("Pokemon".to_string(), &db);
     for row in target_row1 {
         println!("{:?}", row.data)
     }
+    println!("-----");
     // SELECT * FROM Move;
     let target_row2 = get_db_row("Move".to_string(), &db);
     for row in target_row2 {
         println!("{:?}", row.data)
     }
-    /// SELECT * FROM Pokemon WHERE Name = "ピカチュウ";
-    let column_position = db.tables.iter().find(|table| table.table_name == "Pokemon".to_string()).unwrap().columns.iter().position(|column| column == "Name").unwrap();
+    println!("-----");
+    // SELECT * FROM Pokemon WHERE Name = "ピカチュウ";
+    let column_position1 = get_db_column_position("Pokemon".to_string(), "Name", &db);
     let binding1 = get_db_row("Pokemon".to_string(), &db);
-    let target_row3 = binding1.iter().filter(|row| row.data[column_position] == "ピカチュウ".to_string()).collect::<Vec<_>>();
+    let target_row3 = binding1.iter().filter(|row| row.data[column_position1] == "ピカチュウ".to_string()).collect::<Vec<_>>();
     for row in target_row3 {
         println!("{:?}", row.data)
     }
+    println!("-----");
+    // UPDATE Pokemon SET Level = 6 WHERE Name = "ピカチュウ";
+    let column_position2 = get_db_column_position("Pokemon".to_string(), "Name", &db);
+    let binding2 = get_db_row("Pokemon".to_string(), &db);
+    let target_row4 = binding2.iter().filter(|row| row.data[column_position2] == "ピカチュウ".to_string()).collect::<Vec<_>>();
+    let new_row = Row {
+        table_id: target_row4[0].table_id,
+        row_id: target_row4[0].row_id,
+        data: vec!["ピカチュウ".to_string(), "でんき".to_string(), "6".to_string()],
+        utc_time: Utc::now(),
+    };
+    db.rows.push(new_row);
+    let target_row5 = get_db_row("Pokemon".to_string(), &db);
+    for row in target_row5 {
+        println!("{:?}", row.data)
+    }
+    println!("-----");
+}
+
+fn get_db_column_position(table_name: String, column_name:&str, db: &Database) -> usize {
+    db.tables.iter().find(|table| table.table_name == table_name.to_string()).unwrap().columns.iter().position(|column| column == column_name).unwrap()
 }
 
 /// テーブルIDを指定して、そのテーブルの全てのrowを取得する
@@ -29,12 +53,12 @@ fn get_db_row(table_name: String, db: &Database) -> Vec<&Row> {
 
 fn inti_data_base() -> Database {
     let mut tables = Vec::new();
-    let mut table1 = Table {
+    let table1 = Table {
         table_id: 1,
         table_name: "Pokemon".to_string(),
         columns: vec!["Name".to_string(), "Type".to_string(), "Level".to_string()],
     };
-    let mut table2 = Table {
+    let table2 = Table {
         table_id: 2,
         table_name: "Move".to_string(),
         columns: vec!["Name".to_string(), "Type".to_string(), "Power".to_string()],
@@ -43,25 +67,25 @@ fn inti_data_base() -> Database {
     tables.push(table2);
 
     let mut rows = Vec::new();
-    let mut row1 = Row {
+    let row1 = Row {
         table_id: 1,
         row_id: 1,
         data: vec!["ピカチュウ".to_string(), "でんき".to_string(), "5".to_string()],
         utc_time: Utc::now(),
     };
-    let mut row2 = Row {
+    let row2 = Row {
         table_id: 2,
         row_id: 2,
         data: vec!["でんきショック".to_string(), "でんき".to_string(), "40".to_string()],
         utc_time: Utc::now(),
     };
-    let mut row3 = Row {
+    let row3 = Row {
         table_id: 1,
         row_id: 3,
         data: vec!["ヒトカゲ".to_string(), "ほのお".to_string(), "5".to_string()],
         utc_time: Utc::now(),
     };
-    let mut row4 = Row {
+    let row4 = Row {
         table_id: 2,
         row_id: 4,
         data: vec!["ひのこ".to_string(), "ほのお".to_string(), "40".to_string()],
